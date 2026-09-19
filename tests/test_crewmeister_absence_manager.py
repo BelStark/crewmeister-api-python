@@ -60,7 +60,7 @@ class AbsenceManagerApiServiceTests(unittest.TestCase):
 
         balances = service.list_resource(
             "entitlement-balances",
-            query={"filter": "crewId==24;userId==7;date>=2026-01-01", "sort": ["date"]},
+            query={"filter": "crewId==24;userId==7;date==2026-01-31", "sort": ["date"]},
             page_size=25,
             limit=1,
         )
@@ -71,7 +71,7 @@ class AbsenceManagerApiServiceTests(unittest.TestCase):
         query = parse.parse_qs(parsed.query)
         self.assertEqual(request.get_method(), "GET")
         self.assertEqual(parsed.path, "/api/v3/absencemanager/entitlement-balances")
-        self.assertEqual(query["filter"], ["crewId==24;userId==7;date>=2026-01-01"])
+        self.assertEqual(query["filter"], ["crewId==24;userId==7;date==2026-01-31"])
         self.assertEqual(query["sort"], ["date"])
         self.assertEqual(query["page"], ["0"])
         self.assertEqual(query["pageSize"], ["25"])

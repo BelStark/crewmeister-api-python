@@ -62,6 +62,10 @@ separate; a person identifier does not establish that the same value is a member
 other resource ID. Use a specific supplied filter or identifier and report when the
 provider does not expose the requested mapping.
 
+For employee-scoped balances, use the provider's RSQL contract: `duration-balances`
+requires `date=ge=YYYY-MM-DD;date=le=YYYY-MM-DD` and permits at most 31 days;
+`entitlement-balances` permits one date predicate, for example `date==YYYY-MM-DD`.
+
 For MCP, call `crewmeister_describe` first. Reads use `crewmeister_list` with
 `category`, `resource`, optional `query`, `page`, and `page_size`, or `crewmeister_get`
 with `category`, `resource`, and `item_id`. A successful read returns redacted

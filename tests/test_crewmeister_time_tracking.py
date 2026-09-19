@@ -70,7 +70,7 @@ class TimeTrackingApiServiceTests(unittest.TestCase):
 
         balances = service.list_resource(
             "duration-balances",
-            query={"filter": "crewId==24;userId==7;date>=2026-01-01", "sort": ["date"]},
+            query={"filter": "crewId==24;userId==7;date=ge=2026-01-01;date=le=2026-01-31", "sort": ["date"]},
             page_size=31,
             limit=1,
         )
@@ -81,7 +81,7 @@ class TimeTrackingApiServiceTests(unittest.TestCase):
         query = parse.parse_qs(parsed.query)
         self.assertEqual(request.get_method(), "GET")
         self.assertEqual(parsed.path, "/api/v3/timetracking/duration-balances")
-        self.assertEqual(query["filter"], ["crewId==24;userId==7;date>=2026-01-01"])
+        self.assertEqual(query["filter"], ["crewId==24;userId==7;date=ge=2026-01-01;date=le=2026-01-31"])
         self.assertEqual(query["sort"], ["date"])
         self.assertEqual(query["page"], ["0"])
         self.assertEqual(query["pageSize"], ["31"])
