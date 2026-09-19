@@ -1,0 +1,26 @@
+# Local environments and credentials
+.env
+.env.*
+!.env.template
+.venv/
+
+# Python and tool caches
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+htmlcov/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.uv-cache/
+
+# Generated artifacts and scratch files
+build/
+dist/
+tmp/
+tests/_out/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db

@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "uv sync",
+      "type": "shell",
+      "command": "uv sync --locked --dev --all-extras",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "lint and types",
+      "type": "shell",
+      "command": "uv run --no-sync ruff check . && uv run --no-sync black --check . && uv run --no-sync mypy src",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "offline tests",
+      "type": "shell",
+      "command": "docker build --target test -t crewmeister-api:test .",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "installed artifacts",
+      "type": "shell",
+      "command": "docker build --target sdk-artifacts --output type=local,dest=dist/sdk .",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling==1.32.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "crewmeister-api"
+version = "0.1.0"
+description = "Community Crewmeister API SDK, CLI, and local MCP server."
+readme = "README.md"
+requires-python = ">=3.14"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "BelStark" }]
+maintainers = [{ name = "BelStark" }]
+classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3.14"]
+dependencies = []
+
+[project.scripts]
+crewmeister = "crewmeister_api.cli:main"
+crewmeister-mcp = "crewmeister_api.mcp_server:main"
+
+[project.optional-dependencies]
+cli = [
+    "python-dotenv>=1.2,<2",
+]
+mcp = [
+    "mcp>=2,<3",
+    "python-dotenv>=1.2,<2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/crewmeister_api"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/tests", "/scripts", "/.agents/skills/crewmeister-use", "/pyproject.toml", "/README.md", "/LICENSE", "/NOTICE", "/CONTRIBUTING.md", "/DCO"]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "mypy>=2.3.1",
+    "pre-commit>=4.0.0",
+    "ruff>=0.9.0",
+]
+
+[tool.black]
+line-length = 120
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "SIM", "UP"]
