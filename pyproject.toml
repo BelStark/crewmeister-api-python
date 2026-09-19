@@ -32,7 +32,7 @@ mcp = [
 packages = ["src/crewmeister_api"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/src", "/tests", "/scripts", "/.agents/skills/crewmeister-use", "/pyproject.toml", "/README.md", "/LICENSE", "/NOTICE", "/CONTRIBUTING.md", "/DCO"]
+include = ["/src", "/tests", "/scripts", "/docs", "/.agents/skills/crewmeister-use", "/pyproject.toml", "/README.md", "/LICENSE", "/NOTICE", "/CONTRIBUTING.md", "/SECURITY.md", "/DCO"]
 
 [dependency-groups]
 dev = [
