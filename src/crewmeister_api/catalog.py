@@ -7,6 +7,13 @@ from importlib.metadata import version
 
 from crewmeister_api.categories import API_CATEGORIES, BINARY_DOWNLOAD_RESOURCES
 from crewmeister_api.client import AUTH_PATH
+from crewmeister_api.contracts import (
+    contract_version,
+    download_contract,
+    job_contract,
+    operation_contract,
+    webclient_contract,
+)
 from crewmeister_api.resources import ResourceOperation
 
 _RESOURCE_OPERATIONS: tuple[ResourceOperation, ...] = (
@@ -41,7 +48,7 @@ _MCP_FAMILIES = {
 _ITEM_OPERATIONS = frozenset({"get", "patch", "replace", "delete"})
 _PAYLOAD_OPERATIONS = frozenset({"create", "batch", "patch", "replace"})
 _WRITE_OPERATIONS = frozenset({"create", "batch", "patch", "replace", "delete"})
-CatalogOperation = dict[str, str | bool | None]
+CatalogOperation = dict[str, object]
 
 
 def describe_api(category_name: str | None = None, endpoint_name: str | None = None) -> dict[str, object]:
@@ -81,14 +88,15 @@ def describe_api(category_name: str | None = None, endpoint_name: str | None = N
 
 def _document(**content: object) -> dict[str, object]:
     return {
-        "catalog_version": 1,
+        "catalog_version": 2,
+        "requirements_version": contract_version(),
         "package_version": version("crewmeister-api"),
         "mcp_status": "available with crewmeister-api[mcp] via crewmeister-mcp",
         "mcp_families": dict(_MCP_FAMILIES),
         "mcp_write_confirmation": "confirm=true",
         "limitations": [
             "Technical availability does not confirm provider permission.",
-            "Unverified payload schemas and business result contracts remain provider-specific.",
+            "Requirements describe documented request form, not provider permission or business outcome.",
             "Job paths are marked live-verified or guideline-derived; neither is an explicit OpenAPI operation.",
         ],
         "cli": {
@@ -138,7 +146,7 @@ def _category_operations(category_name: str) -> list[CatalogOperation]:
 
 
 def _authentication_operation() -> CatalogOperation:
-    return {
+    operation: CatalogOperation = {
         "kind": "authentication",
         "category": None,
         "name": "user",
@@ -154,29 +162,35 @@ def _authentication_operation() -> CatalogOperation:
         "credential_source": "configured bearer token or configured username/password",
         "side_effect": "authentication",
     }
+    operation["requirements"] = _requirements("platform", "POST", AUTH_PATH)
+    return operation
 
 
 def _resource_operation(category: str, resource: str, path: str, operation: ResourceOperation) -> CatalogOperation:
     item_id = operation in _ITEM_OPERATIONS
-    return {
+    method = _METHODS[operation]
+    operation_path = f"{path}/{{id}}" if item_id else path
+    catalog_operation: CatalogOperation = {
         "kind": "resource",
         "category": category,
         "name": resource,
         "operation": operation,
         "mcp_family": _MCP_FAMILIES[operation],
         "mcp_confirm": operation in _WRITE_OPERATIONS,
-        "method": _METHODS[operation],
-        "path": f"{path}/{{id}}" if item_id else path,
+        "method": method,
+        "path": operation_path,
         "item_id": item_id,
         "cli_json_payload": operation in _PAYLOAD_OPERATIONS,
         "http_json_body": operation in _PAYLOAD_OPERATIONS,
         "pageable": operation == "list",
         "side_effect": "write" if operation in _WRITE_OPERATIONS else "read",
     }
+    catalog_operation["requirements"] = _requirements(category, method, operation_path)
+    return catalog_operation
 
 
 def _task_operation(category: str, task: str, path: str) -> CatalogOperation:
-    return {
+    operation: CatalogOperation = {
         "kind": "task",
         "category": category,
         "name": task,
@@ -191,10 +205,12 @@ def _task_operation(category: str, task: str, path: str) -> CatalogOperation:
         "pageable": False,
         "side_effect": "write",
     }
+    operation["requirements"] = _requirements(category, "POST", path)
+    return operation
 
 
 def _download_operation(category: str, resource: str, path: str) -> CatalogOperation:
-    return {
+    operation: CatalogOperation = {
         "kind": "resource",
         "category": category,
         "name": resource,
@@ -215,12 +231,14 @@ def _download_operation(category: str, resource: str, path: str) -> CatalogOpera
         "sdk_method": "download_resource",
         "output": "binary file",
     }
+    operation["requirements"] = download_contract(category, f"{path}/{{id}}", "binaryContentReference")
+    return operation
 
 
 def _job_operation(
     category: str, kind: str, name: str, path: str, *, collection_path: str | None = None
 ) -> CatalogOperation:
-    return {
+    operation: CatalogOperation = {
         "kind": kind,
         "category": category,
         "name": name,
@@ -236,3 +254,12 @@ def _job_operation(
         "side_effect": "read",
         "contract": "live-verified" if collection_path else "guideline-derived",
     }
+    operation["requirements"] = job_contract(category, verified=collection_path is not None)
+    return operation
+
+
+def _requirements(category: str, method: str, path: str) -> dict[str, object]:
+    requirements = operation_contract(category, method, path) or webclient_contract(category, method, path)
+    if requirements is None:
+        raise RuntimeError(f"Missing Crewmeister requirements for {category} {method} {path}.")
+    return requirements

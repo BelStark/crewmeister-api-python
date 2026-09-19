@@ -21,6 +21,13 @@ A download is a read when `side_effect: "read"`, `metadata_method: "GET"`, and
 `binary_method: "GET"`. Names do not imply safety. For example, `get-current-user` is
 a POST task and therefore a write.
 Do not invent payload fields, filters, permissions, resource IDs, or job contracts.
+Each catalogued operation now has `requirements`. For `kind: "openapi"`, use its
+documented `parameters`, `request`, `responses`, and the referenced definitions in
+`components`; `filter.allowed_fields` and sort enums limit query construction. A listed
+`unresolved_references` entry is missing from the provider specification: do not infer
+its shape. Field `readOnly`, `nullable`, and `validations` facts are binding where
+present. `web-client-observed`, `composed-read`, and `guideline-derived` requirements
+state their narrower evidence explicitly.
 
 Use MCP when the configured server is available, the SDK for application integration,
 and the CLI for a deliberate shell command. Do not switch interfaces to bypass a

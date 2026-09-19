@@ -39,6 +39,7 @@ if sys.argv[1:] == ["--prepare-extras"]:
 with zipfile.ZipFile(wheel) as archive:
     names = archive.namelist()
     assert "crewmeister_api/py.typed" in names
+    assert "crewmeister_api/contracts.json" in names
     assert all(n.startswith(("crewmeister_api/", "crewmeister_api-")) for n in names)
     assert not any(n.endswith(".crt") or "crewmeister_prime" in n for n in names)
     for name in ("LICENSE", "NOTICE"):
@@ -47,6 +48,7 @@ with zipfile.ZipFile(wheel) as archive:
 with tarfile.open(sdist) as archive:
     names = archive.getnames()
     assert any(n.endswith("/src/crewmeister_api/py.typed") for n in names)
+    assert any(n.endswith("/src/crewmeister_api/contracts.json") for n in names)
     assert all(
         n.split("/")[1]
         in {

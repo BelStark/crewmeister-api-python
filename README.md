@@ -45,12 +45,18 @@ the actual CLI pagination and output contract. A selected endpoint identifies it
 method, path shape, required item ID or JSON payload, pagination, read/write effect and
 MCP availability. Download entries are SDK/CLI-only and identify the metadata path and
 binary reference used for their binary output.
-The catalog is derived from the installed package's existing category registry; it does
-not copy the audit matrix or assert unverified provider payload schemas or permissions.
-Job reads are marked `contract: "live-verified"` for the confirmed report-task route,
-otherwise `"guideline-derived"`. Both are separate from the 395 explicit OpenAPI operations.
-The salary-generation batch route is additionally based on the provider's web client;
-it is not part of that OpenAPI inventory.
+Catalog version 2 remains derived from the installed package's category registry; it
+does not use the audit matrix as a second route registry. Every operation includes additive
+`requirements`: compact public-OpenAPI facts for parameters, request and response
+schemas, referenced components, field mutability, nullability and validations, filter
+fields, sort enums, and the source URL and SHA-256. This is sufficient to form only
+documented calls without redistributing the provider specifications themselves. An
+`unresolved_references` entry means the provider specification names a component it does
+not define; its shape must not be inferred.
+Job reads retain `contract: "live-verified"` for the confirmed report-task route and
+`"guideline-derived"` otherwise; `requirements.kind` gives the corresponding evidence.
+The salary-generation batch route is `web-client-observed`, not part of the public
+OpenAPI inventory.
 
 ```python
 from crewmeister_api import describe_api

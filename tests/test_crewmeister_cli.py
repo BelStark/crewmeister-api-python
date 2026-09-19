@@ -33,10 +33,13 @@ class CrewmeisterCliTests(unittest.TestCase):
         index_text = stdout.getvalue()
         catalog = json.loads(stdout.getvalue())
         self.assertEqual((code, stderr.getvalue(), factory.calls), (0, "", 0))
+        self.assertEqual(catalog["catalog_version"], 2)
         self.assertEqual(catalog["operation_count"], 469)
         self.assertEqual(sum(category["operation_count"] for category in catalog["categories"]), 468)
+        self.assertEqual(catalog["requirements_version"], 1)
         self.assertEqual(catalog["authentication"]["cli_json_payload"], False)
         self.assertEqual(catalog["authentication"]["http_json_body"], True)
+        self.assertEqual(catalog["authentication"]["requirements"]["kind"], "openapi")
         self.assertEqual(catalog["cli"]["page_options"]["page"], "--page INTEGER >= 0")
         self.assertIn("Technical availability does not confirm provider permission.", catalog["limitations"])
         self.assertEqual(
@@ -87,6 +90,72 @@ class CrewmeisterCliTests(unittest.TestCase):
             expected = {(row["method"], row["path"]) for row in csv.DictReader(matrix)}
         self.assertEqual(non_job, expected | webclient)
         self.assertEqual((len(operations), len(actual), len(non_job - webclient)), (469, 467, 395))
+        self.assertTrue(all("requirements" in operation for operation in operations))
+        self.assertTrue(
+            all(
+                operation["requirements"]["kind"] == "openapi"
+                for operation in operations
+                if operation["operation"] not in {"job", "download"}
+                and (operation["method"], operation["path"]) not in webclient
+            )
+        )
+        salary_generation = next(
+            operation for operation in operations if (operation["method"], operation["path"]) in webclient
+        )
+        self.assertEqual(salary_generation["requirements"]["kind"], "web-client-observed")
+        changelog_list = next(
+            operation
+            for operation in operations
+            if operation["category"] == "audit"
+            and operation["name"] == "changelogs"
+            and operation["operation"] == "list"
+        )
+        changelog_filter = next(
+            parameter for parameter in changelog_list["requirements"]["parameters"] if parameter.get("name") == "filter"
+        )
+        self.assertEqual(
+            changelog_filter["allowed_fields"],
+            [
+                "id",
+                "type",
+                "resourceId",
+                "action",
+                "crewId",
+                "userIdBefore",
+                "userIdAfter",
+                "fromBefore",
+                "fromAfter",
+                "toBefore",
+                "toAfter",
+                "resourceBefore",
+                "resourceAfter",
+                "originalCallerContext",
+                "authentication",
+                "actingAuthentication",
+                "changeTime",
+                "changeId",
+                "causedById",
+            ],
+        )
+        self.assertIn("Changelog", changelog_list["requirements"]["components"]["schemas"])
+        news_list = next(
+            operation
+            for operation in operations
+            if operation["category"] == "notification"
+            and operation["name"] == "news"
+            and operation["operation"] == "list"
+        )
+        news = news_list["requirements"]["components"]["schemas"]["News"]["properties"]
+        self.assertEqual(
+            (news["id"]["readOnly"], news["createdAt"]["nullable"], news["receiverId"]["validations"]),
+            (True, True, ["Active userId in the crewId"]),
+        )
+        token_list = next(
+            operation
+            for operation in operations
+            if operation["name"] == "admin-authentication-tokens" and operation["operation"] == "list"
+        )
+        self.assertIn("#/components/schemas/LocalDateTime", token_list["requirements"]["unresolved_references"])
         report_job = next(op for op in operations if op["name"] == "time-tracking-report" and op["operation"] == "job")
         self.assertEqual(
             (report_job["path"], report_job["contract"]),
@@ -124,30 +193,30 @@ class CrewmeisterCliTests(unittest.TestCase):
         catalog = json.loads(stdout.getvalue())
         self.assertEqual((code, stderr.getvalue(), factory.calls), (0, "", 0))
         self.assertEqual(catalog["operation_count"], 8)
-        self.assertEqual(
-            next(
-                operation
-                for operation in catalog["operations"]
-                if operation["category"] == "platform"
-                and operation["name"] == "teams"
-                and operation["operation"] == "delete"
-            ),
-            {
-                "category": "platform",
-                "item_id": True,
-                "cli_json_payload": False,
-                "http_json_body": False,
-                "kind": "resource",
-                "mcp_confirm": True,
-                "method": "DELETE",
-                "mcp_family": "crewmeister_delete",
-                "name": "teams",
-                "operation": "delete",
-                "pageable": False,
-                "path": "/api/v3/platform-app/teams/{id}",
-                "side_effect": "write",
-            },
+        team_delete = next(
+            operation
+            for operation in catalog["operations"]
+            if operation["category"] == "platform"
+            and operation["name"] == "teams"
+            and operation["operation"] == "delete"
         )
+        expected_team_delete = {
+            "category": "platform",
+            "item_id": True,
+            "cli_json_payload": False,
+            "http_json_body": False,
+            "kind": "resource",
+            "mcp_confirm": True,
+            "method": "DELETE",
+            "mcp_family": "crewmeister_delete",
+            "name": "teams",
+            "operation": "delete",
+            "pageable": False,
+            "path": "/api/v3/platform-app/teams/{id}",
+            "side_effect": "write",
+        }
+        self.assertEqual({key: team_delete[key] for key in expected_team_delete}, expected_team_delete)
+        self.assertEqual(team_delete["requirements"]["kind"], "openapi")
         job = next(operation for operation in catalog["operations"] if operation["operation"] == "job")
         self.assertEqual(
             (job["kind"], job["path"], job["mcp_family"], job["contract"]),
