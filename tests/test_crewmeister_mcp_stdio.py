@@ -45,4 +45,4 @@ class CrewmeisterMcpStdioTests(unittest.IsolatedAsyncioTestCase):
             )
             result = await session.call_tool("crewmeister_describe", {})
             self.assertFalse(result.is_error)
-            self.assertEqual(result.structured_content["operation_count"], 467)
+            self.assertEqual(result.structured_content["operation_count"], 469)

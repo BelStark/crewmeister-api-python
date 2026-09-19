@@ -12,7 +12,7 @@ from importlib.metadata import version
 from typing import Any, BinaryIO, Never, TextIO, cast
 
 from crewmeister_api.catalog import describe_api
-from crewmeister_api.categories import API_CATEGORIES, ApiCategorySpec
+from crewmeister_api.categories import API_CATEGORIES, BINARY_DOWNLOAD_RESOURCES, ApiCategorySpec
 from crewmeister_api.client import (
     CrewmeisterApiClient,
     CrewmeisterApiConfig,
@@ -29,7 +29,6 @@ from crewmeister_api.safe_output import redact_sensitive, structured_error
 ClientFactory = Callable[[], CrewmeisterApiClient]
 
 WRITE_OPERATIONS = {"create", "batch", "patch", "replace", "delete", "task"}
-BINARY_DOWNLOAD_RESOURCES = frozenset({("time-tracking", "time-tracking-reports"), ("salary-export", "salary-exports")})
 
 
 class CliParseExit(RuntimeError):

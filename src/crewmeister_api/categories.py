@@ -108,3 +108,5 @@ API_CATEGORIES: Mapping[str, ApiCategorySpec] = {
         tasks={},
     ),
 }
+
+BINARY_DOWNLOAD_RESOURCES = frozenset({("time-tracking", "time-tracking-reports"), ("salary-export", "salary-exports")})

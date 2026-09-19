@@ -14,6 +14,14 @@ and companion consumer skill. Keep changes small and easy to validate.
 - Keep only the consumer skill under .agents/skills; do not add a backlog framework.
 - BelStark maintains the project. Contributions use Apache-2.0 and DCO sign-offs.
 
+## Package use
+
+For a user task that operates Crewmeister, read `.agents/skills/crewmeister-use/SKILL.md`
+before selecting a command, SDK call, or MCP tool. From this checkout, run the CLI as
+`uv run --no-sync crewmeister`; an installed package provides `crewmeister` and
+`crewmeister-mcp`. Development and tests stay offline; a user-authorized operational
+request is limited to its stated operation and does not authorize background calls.
+
 ## Verification
 
 ```sh

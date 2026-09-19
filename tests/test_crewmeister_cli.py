@@ -33,8 +33,8 @@ class CrewmeisterCliTests(unittest.TestCase):
         index_text = stdout.getvalue()
         catalog = json.loads(stdout.getvalue())
         self.assertEqual((code, stderr.getvalue(), factory.calls), (0, "", 0))
-        self.assertEqual(catalog["operation_count"], 467)
-        self.assertEqual(sum(category["operation_count"] for category in catalog["categories"]), 466)
+        self.assertEqual(catalog["operation_count"], 469)
+        self.assertEqual(sum(category["operation_count"] for category in catalog["categories"]), 468)
         self.assertEqual(catalog["authentication"]["cli_json_payload"], False)
         self.assertEqual(catalog["authentication"]["http_json_body"], True)
         self.assertEqual(catalog["cli"]["page_options"]["page"], "--page INTEGER >= 0")
@@ -73,9 +73,12 @@ class CrewmeisterCliTests(unittest.TestCase):
             )
             self.assertEqual(code, 0)
             operations.extend(json.loads(stdout.getvalue())["operations"])
-        actual = {(operation["method"], operation["path"]) for operation in operations}
+        routed_operations = [operation for operation in operations if operation["operation"] != "download"]
+        actual = {(operation["method"], operation["path"]) for operation in routed_operations}
         non_job = {
-            (operation["method"], operation["path"]) for operation in operations if operation["operation"] != "job"
+            (operation["method"], operation["path"])
+            for operation in routed_operations
+            if operation["operation"] != "job"
         }
         webclient = {("PATCH", "/api/v3/salaryexport/salary-export-generation-tasks")}
         # Frozen method/path reference from the original OpenAPI audit, not the runtime registry.
@@ -83,11 +86,32 @@ class CrewmeisterCliTests(unittest.TestCase):
         with matrix_path.open(newline="", encoding="utf-8") as matrix:
             expected = {(row["method"], row["path"]) for row in csv.DictReader(matrix)}
         self.assertEqual(non_job, expected | webclient)
-        self.assertEqual((len(operations), len(actual), len(non_job - webclient)), (467, 467, 395))
+        self.assertEqual((len(operations), len(actual), len(non_job - webclient)), (469, 467, 395))
         report_job = next(op for op in operations if op["name"] == "time-tracking-report" and op["operation"] == "job")
         self.assertEqual(
             (report_job["path"], report_job["contract"]),
             ("/api/v3/timetracking/time-tracking-report-task-jobs/{job_id}", "live-verified"),
+        )
+        downloads = {operation["name"]: operation for operation in operations if operation["operation"] == "download"}
+        self.assertEqual(
+            {
+                name: (
+                    operation["method"],
+                    operation["path"],
+                    operation["metadata_path"],
+                    operation["binary_reference"],
+                )
+                for name, operation in downloads.items()
+            },
+            {
+                "time-tracking-reports": (
+                    None,
+                    None,
+                    "/api/v3/timetracking/time-tracking-reports/{id}",
+                    "binaryContentReference",
+                ),
+                "salary-exports": (None, None, "/api/v3/salaryexport/salary-exports/{id}", "binaryContentReference"),
+            },
         )
 
         stdout = io.StringIO()

@@ -418,11 +418,11 @@ def create_server(router: McpRouter):
     read = ToolAnnotations(read_only_hint=True, open_world_hint=True)
     write = ToolAnnotations(read_only_hint=False, open_world_hint=True)
 
-    @server.tool(annotations=read)
+    @server.tool(description="Inspect registered operations offline before selecting an endpoint.", annotations=read)
     def crewmeister_describe(category: str | None = None, endpoint: str | None = None) -> dict[str, object]:
         return router.describe(category, endpoint)
 
-    @server.tool(annotations=read)
+    @server.tool(description="Read one registered collection page.", annotations=read)
     def crewmeister_list(
         category: str,
         resource: str,
@@ -432,13 +432,13 @@ def create_server(router: McpRouter):
     ) -> dict[str, object]:
         return router.list(category, resource, query=query, page=page, page_size=page_size)
 
-    @server.tool(annotations=read)
+    @server.tool(description="Read one registered resource by its resource ID.", annotations=read)
     def crewmeister_get(
         category: str, resource: str, item_id: str, query: dict[str, object] | None = None
     ) -> dict[str, object]:
         return router.get(category, resource, item_id, query=query)
 
-    @server.tool(annotations=write)
+    @server.tool(description="Create a resource with payload and confirm=true.", annotations=write)
     def crewmeister_create(
         category: str,
         resource: str,
@@ -449,7 +449,7 @@ def create_server(router: McpRouter):
     ) -> dict[str, object]:
         return router.create(category, resource, payload, confirm=confirm, query=query, async_write=async_write)
 
-    @server.tool(annotations=write)
+    @server.tool(description="Run a batch write with payload and confirm=true.", annotations=write)
     def crewmeister_batch(
         category: str,
         resource: str,
@@ -460,7 +460,7 @@ def create_server(router: McpRouter):
     ) -> dict[str, object]:
         return router.batch(category, resource, payload, confirm=confirm, query=query, async_write=async_write)
 
-    @server.tool(annotations=write)
+    @server.tool(description="Patch a resource with payload and confirm=true.", annotations=write)
     def crewmeister_patch(
         category: str,
         resource: str,
@@ -472,7 +472,7 @@ def create_server(router: McpRouter):
     ) -> dict[str, object]:
         return router.patch(category, resource, item_id, payload, confirm=confirm, query=query, async_write=async_write)
 
-    @server.tool(annotations=write)
+    @server.tool(description="Replace a resource with payload and confirm=true.", annotations=write)
     def crewmeister_replace(
         category: str,
         resource: str,
@@ -486,7 +486,10 @@ def create_server(router: McpRouter):
             category, resource, item_id, payload, confirm=confirm, query=query, async_write=async_write
         )
 
-    @server.tool(annotations=ToolAnnotations(read_only_hint=False, destructive_hint=True, open_world_hint=True))
+    @server.tool(
+        description="Delete a registered resource only after authorization and confirm=true.",
+        annotations=ToolAnnotations(read_only_hint=False, destructive_hint=True, open_world_hint=True),
+    )
     def crewmeister_delete(
         category: str,
         resource: str,
@@ -497,7 +500,7 @@ def create_server(router: McpRouter):
     ) -> dict[str, object]:
         return router.delete(category, resource, item_id, confirm=confirm, query=query, async_write=async_write)
 
-    @server.tool(annotations=write)
+    @server.tool(description="Run a POST task with payload and confirm=true.", annotations=write)
     def crewmeister_task(
         category: str,
         task: str,
@@ -508,7 +511,7 @@ def create_server(router: McpRouter):
     ) -> dict[str, object]:
         return router.task(category, task, payload, confirm=confirm, query=query, async_write=async_write)
 
-    @server.tool(annotations=read)
+    @server.tool(description="Read the status or output of a registered job.", annotations=read)
     def crewmeister_job(category: str, kind: str, endpoint: str, job_id: str) -> dict[str, object]:
         return router.job(category, kind, endpoint, job_id)
 

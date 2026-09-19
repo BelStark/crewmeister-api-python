@@ -184,7 +184,8 @@ class CrewmeisterMcpTests(unittest.TestCase):
     @unittest.skipUnless(importlib.util.find_spec("mcp"), "MCP extra is not installed")
     def test_mcp_tools_cover_every_catalogued_operation_family(self) -> None:
         server = create_server(McpRouter(CrewmeisterApiClient(CrewmeisterApiConfig(bearer_token="synthetic"))))
-        tool_names = {tool.name for tool in asyncio.run(server.list_tools())}
+        tools = asyncio.run(server.list_tools())
+        tool_names = {tool.name for tool in tools}
 
         self.assertEqual(
             tool_names,
@@ -201,13 +202,18 @@ class CrewmeisterMcpTests(unittest.TestCase):
                 "crewmeister_job",
             },
         )
+        self.assertTrue(all(tool.description for tool in tools))
         catalog = asyncio.run(server.call_tool("crewmeister_describe", {})).structured_content
-        self.assertEqual(catalog["operation_count"], 467)
+        self.assertEqual(catalog["operation_count"], 469)
         for category in catalog["categories"]:
             operations = asyncio.run(
                 server.call_tool("crewmeister_describe", {"category": category["name"]})
             ).structured_content["operations"]
-            self.assertTrue(all(operation["mcp_family"] in tool_names for operation in operations))
+            self.assertTrue(
+                all(
+                    operation["mcp_family"] is None or operation["mcp_family"] in tool_names for operation in operations
+                )
+            )
 
 
 if __name__ == "__main__":

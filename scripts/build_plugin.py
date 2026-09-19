@@ -82,11 +82,11 @@ def _codex_manifest(package_version: str) -> dict[str, object]:
         "interface": {
             "displayName": "Crewmeister",
             "shortDescription": "Use the Crewmeister SDK, CLI, and MCP server.",
-            "longDescription": "Use the installed Crewmeister API package through its fixed MCP tools.",
+            "longDescription": "Use the installed Crewmeister API package through its SDK, CLI, or fixed MCP tools.",
             "developerName": "BelStark",
             "category": "Productivity",
             "capabilities": ["Read", "Write"],
-            "defaultPrompt": ["Use Crewmeister through its offline catalog and fixed MCP tools."],
+            "defaultPrompt": ["Use Crewmeister through its offline catalog and choose SDK, CLI, or fixed MCP tools."],
         },
     }
 

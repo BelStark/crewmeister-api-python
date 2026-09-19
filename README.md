@@ -31,6 +31,10 @@ uv run crewmeister platform members list --limit 10
 uv run python -m crewmeister_api platform members list --limit 10
 ```
 
+For an agent-assisted operational task, read the compact
+[`crewmeister-use` skill](.agents/skills/crewmeister-use/SKILL.md) first. It selects the
+SDK, CLI, or MCP path and defines their output and write contracts.
+
 ### Offline operation catalog
 
 `crewmeister describe --json` writes a deterministic category index without
@@ -38,7 +42,9 @@ configuration, login or network access. To inspect one resource or task, use
 `crewmeister describe time-tracking durations --json`. The index includes the package
 version, shared authentication operation, the nine MCP operation families and
 the actual CLI pagination and output contract. A selected endpoint identifies its HTTP
-method, path shape, required item ID or JSON payload, pagination and read/write effect.
+method, path shape, required item ID or JSON payload, pagination, read/write effect and
+MCP availability. Download entries are SDK/CLI-only and identify the metadata path and
+binary reference used for their binary output.
 The catalog is derived from the installed package's existing category registry; it does
 not copy the audit matrix or assert unverified provider payload schemas or permissions.
 Job reads are marked `contract: "live-verified"` for the confirmed report-task route,
@@ -213,8 +219,9 @@ crewmeister-mcp --env-file /absolute/path/to/.env
 The server uses STDIO only and exposes `crewmeister_describe` plus the nine fixed
 operation tools `crewmeister_list`, `crewmeister_get`, `crewmeister_create`,
 `crewmeister_batch`, `crewmeister_patch`, `crewmeister_replace`,
-`crewmeister_delete`, `crewmeister_task` and `crewmeister_job`. They cover every operation in the
-installed registry. Tool inputs select a registered category and resource or task;
+`crewmeister_delete`, `crewmeister_task` and `crewmeister_job`. They cover every
+registered operation with an MCP family. Binary download entries have no MCP family and
+use the SDK or CLI. Tool inputs select a registered category and resource or task;
 they cannot supply an arbitrary URL or HTTP method. List accepts one page with
 `query`, `page` and `page_size`; item operations use `item_id`; write and task
 operations use a JSON `payload`. Writes and tasks accept `async_write=true`; job reads

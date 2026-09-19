@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from importlib.metadata import version
 
-from crewmeister_api.categories import API_CATEGORIES
+from crewmeister_api.categories import API_CATEGORIES, BINARY_DOWNLOAD_RESOURCES
 from crewmeister_api.client import AUTH_PATH
 from crewmeister_api.resources import ResourceOperation
 
@@ -126,6 +126,8 @@ def _category_operations(category_name: str) -> list[CatalogOperation]:
             for operation in _RESOURCE_OPERATIONS
             if resource.supports(operation)
         )
+        if (category_name, resource.name) in BINARY_DOWNLOAD_RESOURCES:
+            operations.append(_download_operation(category_name, resource.name, resource.path))
         operations.append(_job_operation(category_name, "resource", resource.name, resource.path))
     for task in category.tasks.values():
         operations.append(_task_operation(category_name, task.name, task.path))
@@ -188,6 +190,30 @@ def _task_operation(category: str, task: str, path: str) -> CatalogOperation:
         "http_json_body": True,
         "pageable": False,
         "side_effect": "write",
+    }
+
+
+def _download_operation(category: str, resource: str, path: str) -> CatalogOperation:
+    return {
+        "kind": "resource",
+        "category": category,
+        "name": resource,
+        "operation": "download",
+        "mcp_family": None,
+        "mcp_confirm": False,
+        "method": None,
+        "path": None,
+        "metadata_method": "GET",
+        "metadata_path": f"{path}/{{id}}",
+        "binary_method": "GET",
+        "binary_reference": "binaryContentReference",
+        "item_id": True,
+        "cli_json_payload": False,
+        "http_json_body": False,
+        "pageable": False,
+        "side_effect": "read",
+        "sdk_method": "download_resource",
+        "output": "binary file",
     }
 
 

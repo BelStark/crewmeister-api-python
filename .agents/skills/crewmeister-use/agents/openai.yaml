@@ -1,3 +1,3 @@
 display_name: Crewmeister Use
-short_description: Use the Crewmeister SDK and CLI safely through their offline operation catalog
-default_prompt: Use the crewmeister-use skill for the current task.
+short_description: Safely use the Crewmeister SDK, CLI, and local MCP server
+default_prompt: Use the crewmeister-use skill to select and use a Crewmeister interface.
