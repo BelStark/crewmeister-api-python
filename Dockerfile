@@ -22,10 +22,11 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 FROM base AS test
 COPY --from=uv-bin /uv /uvx /usr/local/bin/
-COPY pyproject.toml uv.lock README.md LICENSE NOTICE DCO CONTRIBUTING.md ./
+COPY pyproject.toml uv.lock README.md LICENSE NOTICE DCO CONTRIBUTING.md SECURITY.md ./
 COPY src ./src
 COPY tests ./tests
 COPY scripts ./scripts
+COPY docs ./docs
 COPY .agents/skills/crewmeister-use ./.agents/skills/crewmeister-use
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --dev --all-extras
